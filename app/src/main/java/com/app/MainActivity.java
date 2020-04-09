@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.zndroid.takephoto.CallBack;
 import com.zndroid.takephoto.TakePhotoAPI;
 
+import org.devio.takephoto.model.CropOptions;
 import org.devio.takephoto.model.InvokeParam;
 import org.devio.takephoto.model.TResult;
 import org.devio.takephoto.permission.PermissionManager;
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         api.getDefault(this, new CallBack() {
             @Override
             public void takeSuccess(final TResult result) {
-                Toast.makeText(MainActivity.this, "成功", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "成功选择了" + result.getImages().size() + "张", Toast.LENGTH_LONG).show();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -99,5 +100,19 @@ public class MainActivity extends AppCompatActivity {
     public void open_gallery(View view) {
         if (api != null)
             api.openGallery();
+    }
+
+    public void open_gallery_mux(View view) {
+        if (api != null)
+            api.openGallery(3);
+    }
+
+    public void take_photo_with_crop(View view) {
+        if (api != null) {
+            CropOptions cropOptions = new CropOptions.Builder()
+                    .setWithOwnCrop(true)
+                    .create();
+            api.openCameraWithCrop(cropOptions);
+        }
     }
 }

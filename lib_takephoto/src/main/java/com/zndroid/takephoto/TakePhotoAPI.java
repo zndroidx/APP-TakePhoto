@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 import org.devio.takephoto.app.TakePhoto;
 import org.devio.takephoto.app.TakePhotoImpl;
 import org.devio.takephoto.compress.CompressConfig;
+import org.devio.takephoto.model.CropOptions;
 import org.devio.takephoto.model.InvokeParam;
 import org.devio.takephoto.model.TContextWrap;
 import org.devio.takephoto.permission.PermissionManager;
@@ -54,6 +55,16 @@ public class TakePhotoAPI extends API<TakePhotoAPI> {
         return type;
     }
 
+    /**
+     * 获取TakePhoto主入口
+     * */
+    public TakePhoto getTakePhoto() {
+        return takePhoto;
+    }
+
+    /**
+     * 打开相册
+     * */
     public void openGallery() {
         try {
             showLog("openGallery");
@@ -63,10 +74,38 @@ public class TakePhotoAPI extends API<TakePhotoAPI> {
         }
     }
 
+    /**
+     * 打开相册支持多选
+     * @param limit 最多支持选择张数
+     * */
+    public void openGallery(int limit) {
+        try {
+            showLog("openGallery limit=" + limit);
+            openSysGallery(limit);
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    /**
+     * 打开相机并拍照
+     * */
     public void openCamera() {
         try {
             showLog("openCamera");
             openSysCamera();
+        } catch (Exception e) {
+            showError(e.getMessage());
+        }
+    }
+
+    /**
+     * 打开相机并拍照，支持裁剪
+     * */
+    public void openCameraWithCrop(CropOptions cropOptions) {
+        try {
+            showLog("openCameraWithCrop");
+            openSysCameraWithCrop(cropOptions);
         } catch (Exception e) {
             showError(e.getMessage());
         }
@@ -92,6 +131,14 @@ public class TakePhotoAPI extends API<TakePhotoAPI> {
         takePhoto.onPickFromGallery();
     }
 
+    private void openSysGallery(int limit) {
+        if (takePhoto == null) showError("'takePhoto is null'");
+
+        configCompress(takePhoto);
+        if (limit <= 0) limit = 1;
+        takePhoto.onPickMultiple(limit);
+    }
+
     /**
      * 打开系统相机
      */
@@ -106,6 +153,20 @@ public class TakePhotoAPI extends API<TakePhotoAPI> {
 
         configCompress(takePhoto);
         takePhoto.onPickFromCapture(imageUri);
+    }
+
+    private void openSysCameraWithCrop(CropOptions cropOptions) {
+        if (takePhoto == null || cropOptions == null) showError("'takePhoto is null'");
+
+        File file = new File(Environment.getExternalStorageDirectory(), "/temp/" + System.currentTimeMillis() + ".jpg");
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+        Uri imageUri = Uri.fromFile(file);
+
+        configCompress(takePhoto);
+
+        takePhoto.onPickFromCaptureWithCrop(imageUri, cropOptions);
     }
 
     @Override
